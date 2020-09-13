@@ -1,7 +1,8 @@
 function masks = retstim2mask(image_dir, varargin)
     % documentation:
-    %
-    %
+    % loads in all images of a specified format from a specified directory and
+    % outputs a 3D logical matrix <masks> in which (time, X, Y) where ones
+    % represent stimulation
 
     % mandory arguments
     % image_dir : where are the images you want to convert into masks?
@@ -33,13 +34,13 @@ function masks = retstim2mask(image_dir, varargin)
         image_dir = [image_dir, '/']);
     end
     if ~strcmp(fmt(1), '.')
-        fmt = ['.', fmt]);
+        fmt = ['.', fmt];
     end
 
     %% start the actual fuction
     files = dir(sprintf('%s*%s', image_dir, fmt));
 
-    mask = logical(zeros(size(files,1), resize, resize));
+    masks = logical(zeros(size(files,1), resize, resize));
     for file_idx = 1:size(files,1)
         fprintf('%d...\n', file_idx);
 
@@ -51,11 +52,11 @@ function masks = retstim2mask(image_dir, varargin)
         side_remove = (imsize(2)-imsize(1))/2;
         tmp = tmp(:, side_remove:side_remove+imsize(1)-1);
 
-        % convert to binary mask
+        % convert to binary masks
         tmp = changem(tmp, [0 1 1], [127, 0, 255]);
 
         % resize
         tmp = imresize(tmp, [resize, resize]);
 
-        mask(file_idx, :, :) = tmp;
+        masks(file_idx, :, :) = tmp;
     end
