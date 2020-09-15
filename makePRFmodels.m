@@ -4,7 +4,7 @@ function models = makePRFmodels(stimMasks, grid_density, sigmas, varargin)
     % origin of <stimMasks> and with a diameter of the width/height of <stimMasks>. The
     % models can then be convolved with and HRF function.
 
-    % mandory arguments
+    % mandory arguments:
     % stimMasks :           best to use the output of retstim2mask.m which is a 3D
     %                   logical matrix (time, X, Y) where ones represent
     %                   stimulation
@@ -16,8 +16,8 @@ function models = makePRFmodels(stimMasks, grid_density, sigmas, varargin)
     %                   <sigmas> will set the stddev (in units of
     %                   <grid_density>) of a model.
 
-    % default values for vars not set in varargin
-    optional_arg1 = blah;
+    % default values for vars not set in varargin:
+    % none yet
 
     % if varagin variables have been provided, overwrite the above default
     % values with provided values
@@ -52,7 +52,7 @@ function models = makePRFmodels(stimMasks, grid_density, sigmas, varargin)
 
     % preallocate for memory
     gaussians = nan(length(x_coords)*length(y_coords)*length(sigmas),...
-        spatiotemp_size(2)*spatiotemp_size(3)); model_params nan(size
+        spatiotemp_size(2)*spatiotemp_size(3));
     model_params = nan(size(gaussians,1), 3);
 
     model_count = 0;
@@ -76,7 +76,7 @@ function models = makePRFmodels(stimMasks, grid_density, sigmas, varargin)
                     % store the model
                     gaussians(model_count, :) = gauss_tmp(:);
                     % and the model params
-                    model_params(model_count,:) = [x, y, sigmas(sigma_idx)];
+                    model_params(model_count,:) = [y, x, sigmas(sigma_idx)];
                 end
             end
         end
@@ -90,4 +90,6 @@ function models = makePRFmodels(stimMasks, grid_density, sigmas, varargin)
 
     % compute models
     % gaussian models * stimMasks = pRF_model timecourse (before convolution)
-    models = gaussians * stimMasks;
+    models.models = gaussians * stimMasks;
+    models.params = model_params;
+

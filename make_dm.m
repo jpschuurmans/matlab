@@ -93,18 +93,3 @@ function DM = make_dm(Labels, varargin)
     DM = reshape(DM, [], NPreds);
     DM = [zeros(First_Baseline, NPreds); DM; zeros(Last_Baseline, NPreds)];
 
-    %% Convolve
-    DoubleGamma = hrf(1/1000, 20);
-
-    pre_size = size(DM,1);
-
-    % comment for future matt: this was once conv2 and might be needed for more
-    % than 1 column in DM? ...have fun
-    DM = conv(DM, DoubleGamma);
-    DM  = DM./max(DM(:)); % scale to max height == 1;
-    DM = DM(1:pre_size, :); % trim?
-
-    %% Extract a timepoint per TR
-    if strcmp(time_res, 'vols')
-        DM = DM(TR:TR:end,:);
-    end
