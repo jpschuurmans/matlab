@@ -14,13 +14,36 @@ func_names = {'sub-01_ses-01_task-paEcc_space-T1w_desc-preproc_bold.nii.gz',
 stat_map_name = 'tstat1.nii.gz';
 pa_map_outname = 'pa_from_pRF_paecc_bars_bars';
 ecc_map_outname = 'ecc_from_pRF_paecc_bars_bars';
+prf_size_map_outname = 'prf_size_from_pRF_paecc_bars_bars';
+rsq_map_outname = 'rsq_from_pRF_paecc_bars_bars';
 
-% parameters
-grid_density = 10;
-sigmas = [4, 8, 12];
+screen_height_pix = 1080;
+screen_height_cm = 39;
+screen_distance_cm = 200;
+
+%% parameters
+% if we pretend the screen was lower resolution, all the computations are less
+% expensive and we don't lose much precision (it's no as if we can reliably
+% estimate the pRF location down to the pixel level)
+down_sample_model_space = screen_height_pix/4;
+
+% number of pixels (in downsized space) bewteen neighbouring pRF models
+grid_density = 5;
+
+% sigmas in visual degrees to try as models
+% I think we need a logarithmic scaling here...
+% sigmas = [0.05 : 0.05 : 0.8];
+sigmas = [0.8:0.1:2];
+
+% specifc to pa-ecc run and the 2 bar runs
 time_steps = [1000/(((6*42667)-450)/842),...
     1000/(((16*20000)-450)/1044),...
     1000/(((16*20000)-450)/1044)];
+
+%% start
+pixperVA = pixperVisAng(screen_height_pix, screen_height_cm, screen_distance_cm);
+r_pixperVA = pixperVA/(screen_height_pix/down_sample_model_space);
+sigmas = sigmas * r_pixperVA;
 
 nruns = size(func_names,1);
 multi_run_dm = [];
@@ -51,7 +74,7 @@ for run_idx = 1:nruns
 
     % convert the .png screenshots to a 3D binary mask matrix
     clear retstim2mask_params
-    retstim2mask_params.resize = 270;
+    retstim2mask_params.resize = down_sample_model_space;
     stimMasks = retstim2mask(image_dir, retstim2mask_params);
 
     % create model timecourse and pad to make the baseline
@@ -88,12 +111,10 @@ mask(func_mean<-20000) = 0;
 % put the data into a volumes x voxels matrix
 multi_func_ni = permute(multi_func_ni, [4, 1, 2 3]);
 multi_func_ni = reshape(multi_func_ni, size(multi_func_ni,1), []);
-
 % estimate the voxel run means, make the model, subract it off
 run_counfounds = multi_run_dm \ double(multi_func_ni);
 confound_model = multi_run_dm * run_counfounds;
 resid = double(multi_func_ni) - confound_model;
-
 % put the data back into it's original 4D shape
 multi_func_ni = reshape(resid, [sum(nvols), map_size]);
 multi_func_ni = permute(multi_func_ni, [2, 3, 4 1]);
@@ -123,3 +144,9 @@ niftiwrite(single(theta), [data_dir, pa_map_outname], tstat_info_ni);
 % write eccentricity map
 tstat_info_ni.Filename = [data_dir, ecc_map_outname, '.nii'];
 niftiwrite(single(rho), [data_dir, ecc_map_outname], tstat_info_ni);
+% write prf_size map
+tstat_info_ni.Filename = [data_dir, prf_size_map_outname, '.nii'];
+niftiwrite(single(fitted_models.sigma), [data_dir, prf_size_map_outname], tstat_info_ni);
+% write r_squared map
+tstat_info_ni.Filename = [data_dir, rsq_map_outname, '.nii'];
+niftiwrite(single(fitted_models.r_squared), [data_dir, rsq_map_outname], tstat_info_ni);

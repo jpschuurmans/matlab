@@ -5,7 +5,7 @@ function mask = circmask(matSize, radius, varargin)
     % the <location> is supplied in varargin
 
     % mandory arguments
-    % matSize : size of matrix
+    % matSize : vector containing number of rows / cols, respectively
     % radius :  radius of the circle in the returned matrix (must be at least
     %           half of smallest edge of <matSize>
 
