@@ -8,7 +8,7 @@ function dm_conv = hrf_conv(dm, varargin)
     %       stimulation. This is assumed to be in millisecond resoltion (if
     %       not, specify the <time_res> variable. If the resoltion is in
     %       something other fraction of a second, but not milliseconds (i.e.
-    %       not 1/1000), then specify how many milliseconds in <time_steps>
+    %       not 1/1000), then specify how many milliseconds in <time_step>
 
     % default values for vars not set in varargin:
     time_res = 'ms'; %  this can be 'ms' or 'vols'. When it is 'vols', you
@@ -16,7 +16,7 @@ function dm_conv = hrf_conv(dm, varargin)
 
     TR = 1000; %        TR in milliseconds
 
-    time_steps = 1000; % If the resoltion is in something other fraction of a
+    time_step = 1000; % If the resoltion is in something other fraction of a
     %                   second, but not milliseconds (i.e. not 1/1000), then
     %                   specify how many milliseconds out of a second it is in
 
@@ -43,7 +43,7 @@ function dm_conv = hrf_conv(dm, varargin)
     %% start the actual fuction
 
     %% Convolve
-    doublegamma = hrf(1/time_steps, 20)';
+    doublegamma = hrf(1/time_step, 20)';
 
     pre_size = size(dm,1);
 
