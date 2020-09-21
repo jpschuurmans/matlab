@@ -20,10 +20,12 @@ function pairwise_alignment = func_alignment_check(func_data, varargin)
     % params.variable1 = <value>
     % params.variable2 = <value>
 
-    % mask will default to the wholebrain if not provided the results are best
-    % when a mask is provided which is confined to inside the brain and which
-    % includs a sufficient variety of tissue types (so there is some reliable
-    % variation to correlate)
+    % Mask should be a 3D logical where matching the size of the spatial dims
+    % of <func_data(n).data>. Mask will default to the wholebrain if not
+    % provided. The results are best when a mask is provided which is confined
+    % to inside the brain and which includs a sufficient variety of tissue
+    % types (so there is some reliable variation to correlate)
+    mask = 0;
 
     % time dimension is assumed to be the 4th unless otherwise specified
     time_dim = 4;
@@ -57,19 +59,22 @@ function pairwise_alignment = func_alignment_check(func_data, varargin)
     func_size(time_dim) = [];
 
     % if no mask specified, create an all ones (wholebrain mask)
-    if ~exist(mask)
+    if mask==0
+        fprintf('\n');
+        warning('I have not testted this function without using a mask')
+        fprintf('\n');
         mask = ones(func_size);
     end
 
     % preallocate for memory
-    func = zeros(numel(mask), size(func_data,1));
-    for run_idx = 1:size(func_data,1)
+    func = zeros(numel(mask), size(func_data,2));
+    for run_idx = 1:size(func_data,2)
         % extract functional data
         tmp_data = func_data(run_idx).data;
         % average over time dimension
-        mean_vol = mean(tmp_data, time_dim)
+        mean_vol = mean(tmp_data, time_dim);
         % store rusult
-        func(run_idx, :) = tmp_data(:);
+        func(:, run_idx) = mean_vol(:);
     end
 
     % compute the correlation
@@ -79,6 +84,8 @@ function pairwise_alignment = func_alignment_check(func_data, varargin)
     if autoplot
         figure,
         imagesc(pairwise_alignment)
+        axis image
         colormap gray
+        colorbar
         caxis([0.8 1])
     end
