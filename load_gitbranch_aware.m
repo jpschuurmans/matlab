@@ -40,5 +40,15 @@ function varargout = load_gitbranch_aware(varargin)
     % clear the vars that were not part of the original workspace
     clear git_branch_name git_branch_suffix filepath filename ext
 
-    % pass the all the arguemetns to the real function
-    [varargout{1:nargout}] = load( varargin{:} );
+    % pass the all the arguements to the real function
+    load( varargin{:} );
+
+    clear varargin
+
+    % create the loaded variables in the workspace where the script was called
+    T = whos;
+    for ii = 1:length(T)
+        C_ = eval([T(ii).name ';']);
+        assignin('base', T(ii).name, C_)
+    end
+
