@@ -22,19 +22,14 @@ function varargout = saveas_gitbranch_aware(varargin)
     % saveas function with only the save name altered.
 
     %% start actual function
-    % read branch name
-    git_branch_name = textscan(fopen('this_git_branch.txt'), '%q');
-    git_branch_suffix = git_branch_name{1}{1};
+    % find the directory containing the .git directory
+    git_branch_name_suffix = get_git_branch_suffix();
 
     % add suffix to the filename and handle for file extension
-    [filepath, filename, ext] = fileparts(varargin{2});
+    varargin{2} = add_filename_suffix(varargin{2}, git_branch_name_suffix);
 
-    % if the name includes a filepath, append a slash
-    if filepath
-        filepath = [filepath, '/'];
-    end
+    % clear the vars that were not part of the original workspace
+    clear git_branch_name_suffix
 
-    varargin{2} = [filepath, filename, '_', git_branch_suffix, ext];
-
-    % pass the all the arguemetns to the real function
+    % pass the all the arguements to the real function
     [varargout{1:nargout}] = saveas( varargin{:} );

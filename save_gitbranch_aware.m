@@ -22,6 +22,12 @@ function varargout = save_gitbranch_aware(varargin)
     % save function with only the save name altered.
 
     %% start actual function
+    % find the directory containing the .git directory
+    git_branch_name_suffix = get_git_branch_suffix();
+
+    % add suffix to the filename and handle for file extension
+    varargin{1} = add_filename_suffix(varargin{1}, git_branch_name_suffix);
+
     % in case we are trying to save all workspace variables, access them and
     % recreate them in this function's workspace (this might be a bad idea for
     % memory...)
@@ -31,22 +37,8 @@ function varargout = save_gitbranch_aware(varargin)
         eval([T(ii).name,'=C_;']);
     end
 
-    % read branch name
-    git_branch_name = textscan(fopen('this_git_branch.txt'), '%q');
-    git_branch_suffix = git_branch_name{1}{1};
-
-    % add suffix to the filename and handle for file extension
-    [filepath, filename, ext] = fileparts(varargin{1});
-
-    % if the name includes a filepath, append a slash
-    if filepath
-        filepath = [filepath, '/'];
-    end
-
-    varargin{1} = [filepath, filename, '_', git_branch_suffix, ext];
-
     % clear the vars that were not part of the original workspace
-    clear T C_ ii git_branch_name git_branch_suffix filepath filename ext
+    clear T C_ ii git_branch_name_suffix
 
-    % pass the all the arguemetns to the real function
+    % pass the all the arguements to the real function
     [varargout{1:nargout}] = save( varargin{:} );
