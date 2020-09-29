@@ -28,6 +28,12 @@ function varargout = saveas_gitbranch_aware(varargin)
 
     % add suffix to the filename and handle for file extension
     [filepath, filename, ext] = fileparts(varargin{2});
+
+    % if the name includes a filepath, append a slash
+    if filepath
+        filepath = [filepath, '/'];
+    end
+
     varargin{2} = [filepath, filename, '_', git_branch_suffix, ext];
 
     % pass the all the arguemetns to the real function
