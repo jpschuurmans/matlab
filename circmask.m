@@ -17,7 +17,6 @@ function mask = circmask(matSize, radius, varargin)
     % provided values
     if ~isempty(varargin)
         if size(fieldnames(varargin{1}), 1) ~= 0
-
             vars_in_fields = fieldnames(varargin{1});
             for i = 1:numel(vars_in_fields)
                 if ~exist(vars_in_fields{i}, 'var')
@@ -25,7 +24,6 @@ function mask = circmask(matSize, radius, varargin)
                 end
             end
             additional_params = varargin{1};
-
             for additional_params_index = 1:size(fieldnames(varargin{1}), 1)
                 eval([vars_in_fields{additional_params_index}, ' = additional_params.', vars_in_fields{additional_params_index}, ';'])
             end
@@ -43,4 +41,3 @@ function mask = circmask(matSize, radius, varargin)
     x = (1:N).'; y = 1:M;
 
     mask = (x-cx).^2 + (y-cy).^2 <= radius^2;
-
