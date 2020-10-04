@@ -46,11 +46,11 @@ r_pixperVA = pixperVA/(screen_height_pix/down_sample_model_space);
 sigmas = sigmas * r_pixperVA;
 
 nruns = size(func_names,1);
-multi_run_dm = [];
 multi_func_ni = [];
 combined_models.models = [];
+multi_run_dm = [];
+identity_nruns = eye(nruns);
 nvols = zeros(nruns,1);
-tmp = eye(nruns);
 for run_idx = 1:nruns
     fprintf('processing run %d...\n', run_idx);
     time_step = time_steps(run_idx);
@@ -63,7 +63,7 @@ for run_idx = 1:nruns
 
     % build up the global run confounds design matrix
     multi_run_dm = [multi_run_dm;...
-        kron(tmp(run_idx,:), ones(nvols(run_idx,1),1))];
+        kron(identity_nruns(run_idx,:), ones(nvols(run_idx,1),1))];
 
     % check for duplicate directories to avoid doing work multiple times
     if run_idx > 1 && strcmp(image_dir, image_dirs{run_idx-1}) &&...

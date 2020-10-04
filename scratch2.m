@@ -1,3 +1,4 @@
+clear all
 close all
 run estimate_pRFs_wrap
 dbquit

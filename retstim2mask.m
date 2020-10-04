@@ -51,8 +51,7 @@ function stimMasks = retstim2mask(image_dir, varargin)
         tmp = tmp(:, side_remove:side_remove+imsize(1)-1);
 
         % convert to binary masks
-        % tmp = changem(tmp, [0 1 1], [127, 0, 255]);
-        tmp(tmp==0)=1; tmp(tmp==255)=1; tmp(tmp==127)=0;
+        tmp = changem(tmp, [0 1 1], [127, 0, 255]);
 
         % resize
         tmp = imresize(tmp, [resize, resize]);
