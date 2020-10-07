@@ -3,23 +3,9 @@ function dm = dm_conv_hrf(dm, nvols, tr, varargin)
     % describe what the function does
 
     % mandory arguments:
-    %  :
-
-    %  :
-
-    %  :
-
-    %  :
-
-    %  :
-
-    % default values for vars not set in varargin: by passing a structure as
-    % the last argument of the function with fieldnames identical to the
-    % variable names e.g.
-    % params.variable1 = <value>
-    % params.variable2 = <value>
-
-    % optional_arg1 = <value>;
+    % dm  :
+    % nvols  :
+    % tr  :
 
     %% overide optional arguments
     % if varagin variables have been provided, overwrite the above default

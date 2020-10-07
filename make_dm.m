@@ -1,6 +1,6 @@
 function DM = make_dm(Labels, varargin)
     % Make DM
-    % Returns a Design Matrix in volume resolution
+    % Returns a design matrix in volume resolution
     % Things should be given in ms resolution. If not, I will convert them.
 
     % Labels = shows the block order. Zeros will be omitted form the design. E.g.
