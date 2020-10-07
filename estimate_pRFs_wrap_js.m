@@ -2,6 +2,7 @@ clear
 clc
 
 sub = 'sub-02';
+
 %% paths
 addpath '/home/jschuurmans/Documents/02_recurrentSF_3T/analysis/matlab'
 
@@ -17,6 +18,7 @@ func_names = {[sub '_ses-01_task-paEcc_space-T1w_desc-preproc_bold.nii.gz'],
 [sub '_ses-01_task-prfBars_run-2_space-T1w_desc-preproc_bold.nii.gz']};
 
 stat_map_name = [sub '_fake_tstat_map_retino.nii.gz'];
+
 % stat_map_name = 'zstat1.nii.gz';
 pa_map_outname = 'pa_from_pRF_paecc_bars_bars';
 ecc_map_outname = 'ecc_from_pRF_paecc_bars_bars';
@@ -34,7 +36,7 @@ screen_distance_cm = 200;
 down_sample_model_space = screen_height_pix/4;
 
 % number of pixels (in downsized space) bewteen neighbouring pRF models
-grid_density = 10;
+grid_density = 5;
 
 % sigmas in visual degrees to try as models
 % I think we need a logarithmic scaling here...
@@ -49,9 +51,10 @@ time_steps = [1000/(((6*42667)-450)/842),...
     1000/(((16*20000)-450)/1044)];
 
 %% start
-% pixperVA = pixperVisAng(screen_height_pix, screen_height_cm, screen_distance_cm);
-% r_pixperVA = pixperVA/(screen_height_pix/down_sample_model_space);
-% sigmas = sigmas * r_pixperVA;
+%%%%%%%%%%%%%%%%%%%%%%%%%%need to comment this out?
+pixperVA = pixperVisAng(screen_height_pix, screen_height_cm, screen_distance_cm);
+r_pixperVA = pixperVA/(screen_height_pix/down_sample_model_space);
+sigmas = sigmas * r_pixperVA;
 
 nruns = size(func_names,1);
 multi_func_ni = [];
@@ -59,6 +62,7 @@ combined_models.models = [];
 multi_run_dm = [];
 identity_nruns = eye(nruns);
 nvols = zeros(nruns,1);
+
 
 for run_idx = 1:nruns
     fprintf('processing run %s...\n', func_names{run_idx});
@@ -115,7 +119,8 @@ map_size = size(functional_ni);
 map_size = map_size(1:3);
 mask = zeros(map_size);
 mask(:, 1:20, :) = 1;
-mask(func_mean<-10000) = 0;
+%%%%%%%%%%%%%%%%%%%%%%% does it need to be 1000?
+mask(func_mean<-20000) = 0;
 
 % remove global run confounds using glm
 % put the data into a volumes x voxels matrix
@@ -142,6 +147,7 @@ fitted_models = fit_pRFs(multi_func_ni, combined_models, fit_pRFs_params);
 % convert theta into degrees (1-180 from upper to lower visual field)
 theta = rad2deg(theta)+180;
 theta = changem(round(theta), [91:180, fliplr(1:180), 1:90], [1:360]);
+
 % keyboard
 % % look at maps
 % figure
