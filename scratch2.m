@@ -1,6 +1,2 @@
-clear all
-close all
-run estimate_pRFs_wrap
+run internal_reliability_wrap.m
 dbquit
-dbcont
-run ~/code/matlab/jolien_project/lagcorr_wrap.m

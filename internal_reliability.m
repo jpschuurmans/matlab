@@ -8,25 +8,25 @@ function reliability = internal_reliability(func, varargin)
     % returns a 2D matrix where each column contains the correlations from each
     % split of the average data in the mask.
     %
-    % Else if <pervoxel> is True, Returns:
-    % A structure contating two 3D maps (the same size as the first 3 dims of
+    % Else if <pervoxel> is True, returns:
+    % A structure containing two 3D maps (the same size as the first 3 dims of
     % <func>(1).data>). Each voxel in the first map contains the mean
     % correlation over splits. Each voxel in the second map contains the
     % standard deviation of the correlations over splits. Providing <mask> and
-    % setting <pervoxel> to true will mean that only the part of the map in
+    % setting <pervoxel> to True will mean that only the part of the map in
     % mask will be computed, with the non-mask voxels being NaN values.
-
+    %
     % mandory arguments:
     % func :  structure containing the fields func(n).data and func(n).dm
     % func(n).data: 4D functional data
     % func(n).dm: 2D design matrix
-
+    %
     % optional arguments (passed as structure - see usage example below):
     % mask :  logical (default = ones)
     % pervoxel  : (default = True if mask is all ones, False otherwise)
     % n_conditions :  (default = all in <dm>)
-    % n_splits  :  (default = 1000)
-
+    % max_n_splits  :  (default = 1000)
+    %
     % function usage example:
     % clear internal_reliability_params
     % internal_reliability_params.mask = <value1>;
@@ -35,11 +35,11 @@ function reliability = internal_reliability(func, varargin)
     % reliability = internal_reliability(func, dm, internal_reliability_params);
 
     %% set default values for optional variables
-    func_dims = size(func(1).run);
-    mask ones(size(func_dims(1:3));
+    func_dims = size(func(1).data);
+    mask = ones(size(func_dims(1:3)));
     pervoxel = min(mask(:))==1;
     n_conditions = size(func(1).dm, 2);
-    n_splits = 1000
+    max_n_splits = 1000;
 
     %% override optional arguments
     % if varagin variables have been provided, overwrite the above default
@@ -69,36 +69,72 @@ function reliability = internal_reliability(func, varargin)
     end
 
     %% start the actual fuction
+    keyboard
     % DO SOMETHING ABOUT PER_VOXEL ARGUMENT
-    n_runs = size(func);
+    n_runs = size(func, 2);
 
     lin_mask = mask(:);
 
     % compute betas for each run
-    betas = nan(sum(mask), size(dm,2), n_runs);
+    betas = nan(sum(lin_mask), size(func(1).dm, 2), n_runs);
     for run_idx = 1:n_runs
         % extract run and dm
-        tmp_data = func(run_idx).run;
+        tmp_data = double(func(run_idx).data);
         tmp_dm = func(run_idx).dm;
 
+        % adjust size of dm if needed
+        discrepancy = size(tmp_dm, 1) - size(tmp_data, 4);
+        if abs(discrepancy) > 0
+            disp('')
+            warning(sprintf(['The design matrix for run %d has a ',...
+                'different number of volumes than the data. The dm will ',...
+                'be adjusted by %d volumes'], run_idx, discrepancy))
+            disp('')
+        end
+        if discrepancy < 0
+            padding = zeros(abs(discrepancy), size(tmp_dm, 2));
+            tmp_dm = [tmp_dm; padding];
+        elseif discrepancy > 0
+            tmp_dm = tmp_dm(1:size(tmp_data, 4), :);
+        end
+
         % reshape tmp_data to be time x voxels
-        tmp_data = permute(tmp_data, [4, 1, 2, 3);
+        tmp_data = permute(tmp_data, [4, 1, 2, 3]);
         tmp_data = reshape(tmp_data, func_dims(4), []);
-        % throw away non-mask data (I don't remember how to index)
-        tmp_data(~lin_mask, :) = [];
+        % throw away non-mask data
+        tmp_data(:, ~lin_mask) = [];
 
         % compute betas for this run for all voxels
-        betas(:,:,run_idx) = tmp_dm \ tmp_data;
+        betas(:,:,run_idx) = (tmp_dm \ tmp_data)';
     end
 
     % correlate betas between splits
-    corrs = nans(size(func_dims(1:3),
-    for split = 1:n_splits
-        A_runs = ;
-        B_runs = ;
+    A_splits = nchoosek(1:n_runs,floor(n_runs/2));
+    B_splits = flipud(nchoosek(1:n_runs,ceil(n_runs/2)));
 
-        corr(betas(:,:,[A_runs), betas(:,:,[B_runs))
+    % how many splits will we do
+    n_splits = min(size(A_splits,1), max_n_splits);
 
+    % shuffle if we're over max_n_splits
+    if size(A_splits,1) > max_n_splits
+        shuffle = randperm(n_splits);
+        A_splits = A_splits(shuffle,:)
+        B_splits = B_splits(shuffle,:)
     end
 
+    % compute split-half correlations
+    corrs = zeros(sum(lin_mask), n_splits);
+    for split = 1:n_splits
+        A_runs = A_splits(split,:);
+        B_runs = B_splits(split,:);
+        A_betas = mean(betas(:,:,A_runs),3);
+        B_betas = mean(betas(:,:,B_runs),3);
+        % needlessly doing all voxel pairwise correlations here...
+        tmp_corrs = corr(A_betas', B_betas');
+        self_corrs = tmp_corrs(logical(eye(size(A_betas,1))));
+        corrs(:, split) = self_corrs;
+    end
+
+    imagesc(corrs)
+    hist(corrs(:))
 

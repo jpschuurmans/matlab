@@ -2,7 +2,7 @@ function dm_conv = hrf_conv(dm, varargin)
     % documentation:
     % Convolve the columns of a design matrix <dm> with an double gamma hrf
     % function. The <dm>
-
+    %
     % mandory arguments:
     % dm :  2D matrix where the columns contain timecourses of the level of
     %       stimulation. This is assumed to be in millisecond resoltion (if
@@ -42,16 +42,25 @@ function dm_conv = hrf_conv(dm, varargin)
 
     %% start the actual fuction
 
+    pre_size = size(dm);
+
+    %% upsample dm
+    if strcmp(time_res, 'vols')
+        dm = dm(:);
+        dm = repmat(dm, 1, 1000)';
+        dm = reshape(dm, [], pre_size(2));
+    end
+
+    post_size = size(dm);
+
     %% Convolve
     doublegamma = hrf(1/time_step, 20)';
-
-    pre_size = size(dm,1);
 
     % comment for future matt: this was once conv2 and might be needed for more
     % than 1 column in dm? ...have fun
     dm_conv = conv2(dm, doublegamma);
     dm_conv  = dm_conv./max(dm_conv(:)); % scale to max height == 1;
-    dm_conv = dm_conv(1:pre_size, :); % trim?
+    dm_conv = dm_conv(1:post_size(1), :); % trim
 
     %% Extract a timepoint per TR
     if strcmp(time_res, 'vols')
