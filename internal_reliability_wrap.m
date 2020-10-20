@@ -20,7 +20,7 @@ for run_idx = 1:5
     keep = find(~strcmp('n/a', tmp));
 
     conditions = unique(tmp, 'rows');
-    % remove and row with n/a in it
+    % remove any row with n/a in it
     tmp = cellstr(conditions);
     remove = find(strcmp('n/a', tmp));
     conditions(remove,:) = [];
