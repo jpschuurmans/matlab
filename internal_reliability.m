@@ -71,8 +71,6 @@ function reliability = internal_reliability(func, varargin)
     end
 
     %% start the actual fuction
-    keyboard
-    % DO SOMETHING ABOUT PER_VOXEL ARGUMENT
     n_runs = size(func, 2);
 
     lin_mask = logical(mask(:));
