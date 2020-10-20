@@ -1,5 +1,6 @@
-input_path='/home/mattb/projects/uclouvain/jolien_proj/';
-output_path='/home/mattb/projects/uclouvain/jolien_proj/';
+input_path = '/home/mattb/projects/uclouvain/jolien_proj/';
+output_path = '/home/mattb/projects/uclouvain/jolien_proj/';
+output_nifti_name = 'sub-01_mainExp_runs_reliability'; % don't add .nii
 
 for run_idx = 1:5
     %% load functional data
@@ -67,6 +68,12 @@ for run_idx = 1:5
     hrf_conv_params.TR = 2000';
     dm = hrf_conv(dm, hrf_conv_params);
 
+    % the checkerboard conditions appear in the first and last columns...
+    % put the first column to the last column: [2:N, 1]
+    dm = circshift(dm, 1, 2);
+
+    % we could add various dm confounds at this point
+
     % store dm in structure
     func(run_idx).dm = dm;
 end
@@ -74,12 +81,15 @@ end
 %% load mask
 mask = niftiread(sprintf('%ssub-01_V1patch.nii', input_path));
 
-%% run relibility function
+%% run reliability function
 clear internal_reliability_params
-internal_reliability_params.mask = mask;
-internal_reliability_params.pervoxel = 1;
-% internal_reliability_params.n_conditions = ;
+internal_reliability_params.mask = mask; % ROI
+internal_reliability_params.pervoxel = 0; % get the ROI average reliability
+internal_reliability_params.n_conditions = 1:24; % don't care about checkboards
 reliability = internal_reliability(func, internal_reliability_params);
 
-%% write reliability map
-niftiwrite(sprintf('%sout.gii', output_path));
+if isstruct(reliability)
+    %% write reliability map
+    niftiwrite(reliability.mean_map, sprintf('%s%s_mean.nii', output_path, output_nifti_name));
+    niftiwrite(reliability.std_map, sprintf('%s%s_mean.nii', output_path, output_nifti_name));
+end
