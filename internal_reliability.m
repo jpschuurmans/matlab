@@ -5,7 +5,7 @@ function reliability = internal_reliability(func, varargin)
     % calculating GLM beta values of each condition in <func>.<dm>.
     %
     % If <mask> is provided, <pervoxel> is False by default and the function
-    % returns a 2D matrix where each column contains the correlations from each
+    % returns a 1D matrix where each column contains the correlations from each
     % split of the average data in the mask.
     %
     % Else if <pervoxel> is True, returns:
