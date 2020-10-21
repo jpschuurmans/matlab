@@ -37,7 +37,8 @@ function reliability = internal_reliability(func, TR, varargin)
     %                       reliability.optimal_batch_size. The batch size can
     %                       be set with <batch_size>.
     %
-    % function usage example: clear internal_reliability_params
+    % function usage example:
+    % clear internal_reliability_params
     % internal_reliability_params.mask = <value1>;
     % internal_reliability_params.pervoxel = <value3>;
     % internal_reliability_params.which_conditions = <value3>;
