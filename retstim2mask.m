@@ -42,7 +42,6 @@ function stimMasks = retstim2mask(image_dir, varargin)
 
     stimMasks = logical(zeros(size(files,1), resize, resize));
     for file_idx = 1:size(files,1)
-
         tmp = imread(sprintf('%s%s', image_dir, files(file_idx).name));
         tmp = rgb2gray(tmp);
 

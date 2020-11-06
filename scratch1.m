@@ -1,9 +1,11 @@
-models
+figure
+hist(reliability.mean_map(:),30)
 
-whos stimMasks
-figure,
-for i = 1:200
-    imagesc(squeeze(stimMasks(i,:,:)))
-    drawnow
+vol = reliability.mean_map;
+figure
+for slice_idx = 1:size(vol,3)
+    subplot(ceil(sqrt(size(vol,3))), ceil(sqrt(size(vol,3))), slice_idx)
+    imagesc(squeeze(vol(:,:,slice_idx)))
+    axis image off
+    caxis([min(vol(:)), max(vol(:))])
 end
-

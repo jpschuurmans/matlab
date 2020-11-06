@@ -1,26 +1,29 @@
 function dm = dm_conv_hrf(dm, nvols, tr, varargin)
-    % mandory arguments
-    % dm : design matrix in millesecond resolution
-    % nvols : how many volums will be in the data?
-    % tr : TR is milleseconds
+    %% documentation:
+    % describe what the function does
 
-    % default values for vars not set in varargin
+    % mandory arguments:
+    % dm  :
+    % nvols  :
+    % tr  :
 
-    % if varagin variables have been provided, overwrite the above default values with
-    % provided values
+    %% overide optional arguments
+    % if varagin variables have been provided, overwrite the above default
+    % values with provided values
     if ~isempty(varargin)
         if size(fieldnames(varargin{1}), 1) ~= 0
-
             vars_in_fields = fieldnames(varargin{1});
             for i = 1:numel(vars_in_fields)
                 if ~exist(vars_in_fields{i}, 'var')
-                    error('one or more of varargins does not correspond exactly to any variable name used in the function')
+                    error(['one or more of varargins does not correspond ',...
+                        'exactly to any variable name used in the function'])
                 end
             end
             additional_params = varargin{1};
-
             for additional_params_index = 1:size(fieldnames(varargin{1}), 1)
-                eval([vars_in_fields{additional_params_index}, ' = additional_params.', vars_in_fields{additional_params_index}, ';'])
+                eval([vars_in_fields{additional_params_index},...
+                    ' = additional_params.',...
+                    vars_in_fields{additional_params_index}, ';'])
             end
         end
     end
