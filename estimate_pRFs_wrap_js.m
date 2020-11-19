@@ -18,7 +18,6 @@ func_names = {[sub '_ses-01_task-paEcc_space-T1w_desc-preproc_bold.nii.gz'],
 [sub '_ses-01_task-prfBars_run-2_space-T1w_desc-preproc_bold.nii.gz']};
 
 stat_map_name = [sub '_fake_tstat_map_retino.nii.gz'];
-<<<<<<< HEAD
 
 % stat_map_name = 'zstat1.nii.gz';
 pa_map_outname = 'pa_from_pRF_paecc_bars_bars';
@@ -63,7 +62,6 @@ combined_models.models = [];
 multi_run_dm = [];
 identity_nruns = eye(nruns);
 nvols = zeros(nruns,1);
-<<<<<<< HEAD
 
 
 for run_idx = 1:nruns
