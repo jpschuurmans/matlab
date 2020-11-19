@@ -1,11 +1,18 @@
+clear
 %% paths
-addpath '/home/mattb/code/matlab/matlab'
-data_dir = '~/projects/uclouvain/jolien_proj/';
+addpath '/home/jschuurmans/Documents/02_recurrentSF_3T/analysis/matlab'
+%data_dir = '~/projects/uclouvain/jolien_proj/';
+sub = 'sub-02';
 
-func_name = 'sub-01_ses-01_task-paEcc_space-T1w_desc-preproc_bold.nii.gz',
+path = ['/home/jschuurmans/Documents/02_recurrentSF_3T/data-bids/derivatives/fmriprep/' sub '/ses-0*/func/' sub '_ses-0*_task-*_bold.nii.gz'];
+directories = dir(path);
 
-% load a functional run
-functional_ni = niftiread(sprintf('%s%s', data_dir, func_name));
+for run_ii = 1:length(directories)
+    fprintf('loading run %d\n',run_ii)
+    % load a functional run
+    functional_ni = niftiread(sprintf('%s/%s', directories(run_ii).folder,directories(run_ii).name ));
+    func_data(run_ii).data = functional_ni;
+end
 
 % make a quick mask for testing
 func_mean = squeeze(mean(functional_ni,4));
@@ -14,17 +21,6 @@ map_size = map_size(1:3);
 mask = zeros(map_size);
 mask(:, 1:20, :) = 1;
 mask(func_mean<-20000) = 0;
-
-% make slightly misaligned copies of the functional data to simulate many runs
-% store the runs in a data structure
-func_data(1).data = functional_ni;
-for run_idx = 2:12
-    rand_shift = [randi(3)-2, randi(3)-2, randi(3)-2, 0];
-    func_data(run_idx).data = circshift(functional_ni, rand_shift);
-end
-
-% make a badly aligned run
-func_data(3).data = circshift(functional_ni, [3, 5, 0]);
 
 % enter optional arguments into struture
 clear func_alignment_check_params

@@ -1,4 +1,7 @@
-clear all
+clear
+clc
+
+sub = 'sub-02';
 %% paths
 addpath '/home/jschuurmans/Documents/02_recurrentSF_3T/analysis/matlab'
 
@@ -6,14 +9,15 @@ image_dirs = {'/home/jschuurmans/Documents/02_recurrentSF_3T/Stimuli/exported_pa
 '/home/jschuurmans/Documents/02_recurrentSF_3T/Stimuli/exported_bars',
 '/home/jschuurmans/Documents/02_recurrentSF_3T/Stimuli/exported_bars'};
 
-input_dir = '/home/jschuurmans/Documents/02_recurrentSF_3T/Data_BIDS/fmriprep/sub-01/ses-01/func/';
-output_dir = '/home/jschuurmans/Documents/02_recurrentSF_3T/Data_BIDS/v1/sub-01/'; 
+input_dir = ['/home/jschuurmans/Documents/02_recurrentSF_3T/data-bids/derivatives/fmriprep/' sub '/ses-01/func/'];
+output_dir = ['/home/jschuurmans/Documents/02_recurrentSF_3T/data-bids/derivatives/analysis-eva/' sub '/']; 
 
-func_names = {'sub-01_ses-01_task-paEcc_space-T1w_desc-preproc_bold.nii.gz',
-'sub-01_ses-01_task-prfBars_run-1_space-T1w_desc-preproc_bold.nii.gz',
-'sub-01_ses-01_task-prfBars_run-2_space-T1w_desc-preproc_bold.nii.gz'};
+func_names = {[sub '_ses-01_task-paEcc_space-T1w_desc-preproc_bold.nii.gz'],
+[sub '_ses-01_task-prfBars_run-1_space-T1w_desc-preproc_bold.nii.gz'],
+[sub '_ses-01_task-prfBars_run-2_space-T1w_desc-preproc_bold.nii.gz']};
 
-stat_map_name = 'sub-01_fake_tstat_map_retino.nii.gz';
+stat_map_name = [sub '_fake_tstat_map_retino.nii.gz'];
+% stat_map_name = 'zstat1.nii.gz';
 pa_map_outname = 'pa_from_pRF_paecc_bars_bars';
 ecc_map_outname = 'ecc_from_pRF_paecc_bars_bars';
 prf_size_map_outname = 'prf_size_from_pRF_paecc_bars_bars';
@@ -30,13 +34,14 @@ screen_distance_cm = 200;
 down_sample_model_space = screen_height_pix/4;
 
 % number of pixels (in downsized space) bewteen neighbouring pRF models
-grid_density = 5;
+grid_density = 10;
 
 % sigmas in visual degrees to try as models
 % I think we need a logarithmic scaling here...
 % sigmas = [0.05 : 0.05 : 0.8];
 % sigmas = [0.8:0.1:2];
 sigmas = [4,8,12];
+% sigmas = [1,2,4,8,12];
 
 % specifc to pa-ecc run and the 2 bar runs
 time_steps = [1000/(((6*42667)-450)/842),...
@@ -44,9 +49,9 @@ time_steps = [1000/(((6*42667)-450)/842),...
     1000/(((16*20000)-450)/1044)];
 
 %% start
-pixperVA = pixperVisAng(screen_height_pix, screen_height_cm, screen_distance_cm);
-r_pixperVA = pixperVA/(screen_height_pix/down_sample_model_space);
-sigmas = sigmas * r_pixperVA;
+% pixperVA = pixperVisAng(screen_height_pix, screen_height_cm, screen_distance_cm);
+% r_pixperVA = pixperVA/(screen_height_pix/down_sample_model_space);
+% sigmas = sigmas * r_pixperVA;
 
 nruns = size(func_names,1);
 multi_func_ni = [];
@@ -54,13 +59,15 @@ combined_models.models = [];
 multi_run_dm = [];
 identity_nruns = eye(nruns);
 nvols = zeros(nruns,1);
+
 for run_idx = 1:nruns
-    fprintf('processing run %d...\n', run_idx);
+    fprintf('processing run %s...\n', func_names{run_idx});
     time_step = time_steps(run_idx);
     image_dir = image_dirs{run_idx};
 
     % load functional data and concaternate in along time dimension
     functional_ni = niftiread(sprintf('%s%s', input_dir, func_names{run_idx}));
+
     multi_func_ni = cat(4, multi_func_ni, functional_ni);
     nvols(run_idx) = size(functional_ni,4);
 
@@ -108,7 +115,7 @@ map_size = size(functional_ni);
 map_size = map_size(1:3);
 mask = zeros(map_size);
 mask(:, 1:20, :) = 1;
-mask(func_mean<-20000) = 0;
+mask(func_mean<-10000) = 0;
 
 % remove global run confounds using glm
 % put the data into a volumes x voxels matrix
@@ -135,12 +142,42 @@ fitted_models = fit_pRFs(multi_func_ni, combined_models, fit_pRFs_params);
 % convert theta into degrees (1-180 from upper to lower visual field)
 theta = rad2deg(theta)+180;
 theta = changem(round(theta), [91:180, fliplr(1:180), 1:90], [1:360]);
+% keyboard
+% % look at maps
+% figure
+% 
+% vol = theta;
+% vol = mask;
+% for slice_idx = 1:size(vol,1)
+%     
+% subplot(ceil(sqrt(size(vol,1))),ceil(sqrt(size(vol,1))), slice_idx)
+% imagesc(squeeze(vol(slice_idx,:,:)))
+% axis image
+%  caxis([min(vol(:)), max(vol(:))])
+% end
+% figure
+% imagesc(squeeze(vol(26,:,:)))
+% axis image
+% 
+% vol = nan(size(vol));
+% for slice_idx = 1:size(vol,1)
+%     vol(slice_idx,:,:) = slice_idx;
+% end
+% vol(~mask)=nan;
 
 fprintf('writing nifti maps...\n');
 %% write to nifti
+
 % load map info as template
-tstat_info_ni = niftiinfo(sprintf('%s%s', input_dir, stat_map_name));
-tstat_info_ni.ImageSize = map_size;
+tstat_info_ni = niftiinfo(sprintf('%s%s', output_dir, stat_map_name));
+
+if tstat_info_ni.ImageSize ~= map_size
+    warning('map size inconsistant')
+end
+
+% tstat_info_ni.ImageSize = map_size;
+
+
 % write polar angle map
 tstat_info_ni.Filename = [output_dir, pa_map_outname, '.nii'];
 niftiwrite(single(theta), [output_dir, pa_map_outname], tstat_info_ni);

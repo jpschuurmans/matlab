@@ -1,4 +1,4 @@
-input_path = '/home/mattb/projects/uclouvain/jolien_proj/';
+input_path = '/home/mattb/projects/uclouvain/jolien_proj/z';
 output_path = '/home/mattb/projects/uclouvain/jolien_proj/';
 output_nifti_name = 'sub-01_mainExp_runs_reliability'; % don't add .nii
 
