@@ -2,7 +2,7 @@ clear
 clc
 
 sub = 'sub-02';
-
+clear all
 %% paths
 addpath '/home/jschuurmans/Documents/02_recurrentSF_3T/analysis/matlab'
 
@@ -18,6 +18,7 @@ func_names = {[sub '_ses-01_task-paEcc_space-T1w_desc-preproc_bold.nii.gz'],
 [sub '_ses-01_task-prfBars_run-2_space-T1w_desc-preproc_bold.nii.gz']};
 
 stat_map_name = [sub '_fake_tstat_map_retino.nii.gz'];
+<<<<<<< HEAD
 
 % stat_map_name = 'zstat1.nii.gz';
 pa_map_outname = 'pa_from_pRF_paecc_bars_bars';
@@ -36,7 +37,7 @@ screen_distance_cm = 200;
 down_sample_model_space = screen_height_pix/4;
 
 % number of pixels (in downsized space) bewteen neighbouring pRF models
-grid_density = 5;
+grid_density = 5; %or does it need to be 10
 
 % sigmas in visual degrees to try as models
 % I think we need a logarithmic scaling here...
@@ -62,6 +63,7 @@ combined_models.models = [];
 multi_run_dm = [];
 identity_nruns = eye(nruns);
 nvols = zeros(nruns,1);
+<<<<<<< HEAD
 
 
 for run_idx = 1:nruns
@@ -71,7 +73,6 @@ for run_idx = 1:nruns
 
     % load functional data and concaternate in along time dimension
     functional_ni = niftiread(sprintf('%s%s', input_dir, func_names{run_idx}));
-
     multi_func_ni = cat(4, multi_func_ni, functional_ni);
     nvols(run_idx) = size(functional_ni,4);
 
@@ -147,7 +148,6 @@ fitted_models = fit_pRFs(multi_func_ni, combined_models, fit_pRFs_params);
 % convert theta into degrees (1-180 from upper to lower visual field)
 theta = rad2deg(theta)+180;
 theta = changem(round(theta), [91:180, fliplr(1:180), 1:90], [1:360]);
-
 % keyboard
 % % look at maps
 % figure
@@ -184,6 +184,11 @@ end
 % tstat_info_ni.ImageSize = map_size;
 
 
+
+fprintf('writing nifti maps...\n');
+%% write to nifti
+% load map info as template
+tstat_info_ni = niftiinfo(sprintf('%s%s', input_dir, stat_map_name));
 % write polar angle map
 tstat_info_ni.Filename = [output_dir, pa_map_outname, '.nii'];
 niftiwrite(single(theta), [output_dir, pa_map_outname], tstat_info_ni);
