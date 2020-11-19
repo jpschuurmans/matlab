@@ -102,9 +102,9 @@ function reliability = internal_reliability(func, TR, varargin)
 
     % check if we need to average the voxel timecourses
     if pervoxel
-        betas = nan(sum(lin_mask), size(func(1).dm, 2), n_runs);
+        betas = nan(sum(lin_mask), size(func(1).dm, 2)+1, n_runs);
     else
-        betas = nan(1, size(func(1).dm, 2), n_runs);
+        betas = nan(1, size(func(1).dm, 2)+1, n_runs);
     end
 
     if optimise_batchsize
@@ -178,6 +178,9 @@ function reliability = internal_reliability(func, TR, varargin)
             tmp_data = mean(tmp_data,2);
         end
 
+        % add run constant to dm
+        tmp_dm = [tmp_dm, ones(size(tmp_dm,1),1)];
+        
         % compute betas for this run for all voxels
         betas(:,:,run_idx) = (tmp_dm \ tmp_data)';
     end
@@ -205,6 +208,7 @@ function reliability = internal_reliability(func, TR, varargin)
         self_idx = logical(eye(batch_size));
     end
     for split = 1:n_splits
+        fprintf('%d/%d...\n', split, n_splits)
         A_runs = A_splits(split,:);
         B_runs = B_splits(split,:);
         A_betas = mean(betas(:,which_conditions,A_runs),3);
@@ -213,6 +217,7 @@ function reliability = internal_reliability(func, TR, varargin)
             if vox_idx+batch_size>size(A_betas,1) && pervoxel
                 vox_idx = size(A_betas,1)-batch_size;
             end
+            
             % self_corrs = corr(A_betas(vox_idx,:)', B_betas(vox_idx,:)');
             tmp_corrs = corr(A_betas(vox_idx:vox_idx+batch_size-1,:)',...
                 B_betas(vox_idx:vox_idx+batch_size-1,:)');
