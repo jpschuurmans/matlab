@@ -2,18 +2,20 @@ clear
 %% paths
 addpath '/home/jschuurmans/Documents/02_recurrentSF_3T/analysis/matlab'
 %data_dir = '~/projects/uclouvain/jolien_proj/';
-sub = 'sub-02';
+sub = 'sub-17';
 
 path = ['/home/jschuurmans/Documents/02_recurrentSF_3T/data-bids/derivatives/fmriprep/' sub '/ses-0*/func/' sub '_ses-0*_task-*_bold.nii.gz'];
 directories = dir(path);
 
 for run_ii = 1:length(directories)
-    fprintf('loading run %d\n',run_ii)
+    %fprintf('loading run %d\n',run_ii)
     % load a functional run
     functional_ni = niftiread(sprintf('%s/%s', directories(run_ii).folder,directories(run_ii).name ));
+    fprintf('loading run %d - size %s\n',run_ii, num2str(size(functional_ni)))
     func_data(run_ii).data = functional_ni;
+    
 end
-
+keyboard
 % make a quick mask for testing
 func_mean = squeeze(mean(functional_ni,4));
 map_size = size(functional_ni);

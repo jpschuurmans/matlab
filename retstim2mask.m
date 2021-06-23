@@ -10,7 +10,6 @@ function stimMasks = retstim2mask(image_dir, varargin)
     % default values for vars not set in varargin
     fmt = 'png'; % what format are the images?
     resize = 270; % how many pixels do you want the width and height to be?
-    keyboard
     % if varagin variables have been provided, overwrite the above default
     % values with provided values
     if ~isempty(varargin)

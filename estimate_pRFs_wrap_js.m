@@ -1,8 +1,8 @@
 clear
 clc
 
-sub = 'sub-02';
-clear all
+sub = 'sub-30';
+
 %% paths
 addpath '/home/jschuurmans/Documents/02_recurrentSF_3T/analysis/matlab'
 
@@ -10,20 +10,38 @@ image_dirs = {'/home/jschuurmans/Documents/02_recurrentSF_3T/Stimuli/exported_pa
 '/home/jschuurmans/Documents/02_recurrentSF_3T/Stimuli/exported_bars',
 '/home/jschuurmans/Documents/02_recurrentSF_3T/Stimuli/exported_bars'};
 
-input_dir = ['/home/jschuurmans/Documents/02_recurrentSF_3T/data-bids/derivatives/fmriprep/' sub '/ses-01/func/'];
-output_dir = ['/home/jschuurmans/Documents/02_recurrentSF_3T/data-bids/derivatives/analysis-eva/' sub '/']; 
+% input_dir = ['/home/jschuurmans/Documents/02_recurrentSF_3T/data-bids/derivatives/fmriprep/' sub '/ses-01/func/'];
+% output_dir = ['/home/jschuurmans/Documents/02_recurrentSF_3T/data-bids/derivatives/freesurfer/' sub '/EVA/'];
+% 
+% func_names = {[sub '_ses-01_task-paEcc_space-T1w_desc-preproc_bold.nii.gz'],
+% [sub '_ses-01_task-prfBars_run-1_space-T1w_desc-preproc_bold.nii.gz'],
+% [sub '_ses-01_task-prfBars_run-2_space-T1w_desc-preproc_bold.nii.gz']};
+% 
+% stat_map_name = [sub '_fake_tstat_map_retino.nii.gz'];
+% 
+% % stat_map_name = 'zstat1.nii.gz';
+% pa_map_outname = 'pa_from_pRF_paecc_bars_bars';
+% ecc_map_outname = 'ecc_from_pRF_paecc_bars_bars';
+% prf_size_map_outname = 'prf_size_from_pRF_paecc_bars_bars';
+% rsq_map_outname = 'rsq_from_pRF_paecc_bars_bars';
 
-func_names = {[sub '_ses-01_task-paEcc_space-T1w_desc-preproc_bold.nii.gz'],
-[sub '_ses-01_task-prfBars_run-1_space-T1w_desc-preproc_bold.nii.gz'],
-[sub '_ses-01_task-prfBars_run-2_space-T1w_desc-preproc_bold.nii.gz']};
 
-stat_map_name = [sub '_fake_tstat_map_retino.nii.gz'];
+input_dir = ['/home/jschuurmans/Documents/02_recurrentSF_3T/data-bids/derivatives/fmriprep/' sub '/ses-02/func/'];
+output_dir = ['/home/jschuurmans/Documents/02_recurrentSF_3T/data-bids/derivatives/freesurfer/' sub '/EVA/'];
+
+func_names = {[sub '_ses-02_task-paEccHB_space-T1w_desc-preproc_bold.nii.gz'],
+[sub '_ses-02_task-prfBarsHB_run-1_space-T1w_desc-preproc_bold.nii.gz'],
+[sub '_ses-02_task-prfBarsHB_run-2_space-T1w_desc-preproc_bold.nii.gz']};
+
+stat_map_name = [sub '_fake_tstat_map_retinoHB.nii.gz'];
 
 % stat_map_name = 'zstat1.nii.gz';
-pa_map_outname = 'pa_from_pRF_paecc_bars_bars';
-ecc_map_outname = 'ecc_from_pRF_paecc_bars_bars';
-prf_size_map_outname = 'prf_size_from_pRF_paecc_bars_bars';
-rsq_map_outname = 'rsq_from_pRF_paecc_bars_bars';
+pa_map_outname = 'HB_pa_from_pRF_paecc_bars_bars';
+ecc_map_outname = 'HB_ecc_from_pRF_paecc_bars_bars';
+prf_size_map_outname = 'HB_prf_size_from_pRF_paecc_bars_bars';
+rsq_map_outname = 'HB_rsq_from_pRF_paecc_bars_bars';
+
+
 
 screen_height_pix = 1080;
 screen_height_cm = 39;
@@ -36,7 +54,7 @@ screen_distance_cm = 200;
 down_sample_model_space = screen_height_pix/4;
 
 % number of pixels (in downsized space) bewteen neighbouring pRF models
-grid_density = 5; %or does it need to be 10
+grid_density = 10; %or does it need to be 15?
 
 % sigmas in visual degrees to try as models
 % I think we need a logarithmic scaling here...
@@ -52,9 +70,9 @@ time_steps = [1000/(((6*42667)-450)/842),...
 
 %% start
 %%%%%%%%%%%%%%%%%%%%%%%%%%need to comment this out?
-pixperVA = pixperVisAng(screen_height_pix, screen_height_cm, screen_distance_cm);
-r_pixperVA = pixperVA/(screen_height_pix/down_sample_model_space);
-sigmas = sigmas * r_pixperVA;
+% pixperVA = pixperVisAng(screen_height_pix, screen_height_cm, screen_distance_cm);
+% r_pixperVA = pixperVA/(screen_height_pix/down_sample_model_space);
+% sigmas = sigmas * r_pixperVA;
 
 nruns = size(func_names,1);
 multi_func_ni = [];
@@ -71,6 +89,11 @@ for run_idx = 1:nruns
 
     % load functional data and concaternate in along time dimension
     functional_ni = niftiread(sprintf('%s%s', input_dir, func_names{run_idx}));
+
+%     % TEST DELETE LAST VOL FROM RUN 1 ONLY FOR SUB 1
+%     if run_idx == 1 && strcmp(sub, 'sub-01')
+%         functional_ni(:,:,:,end) = [];
+%     end
     multi_func_ni = cat(4, multi_func_ni, functional_ni);
     nvols(run_idx) = size(functional_ni,4);
 
@@ -118,8 +141,8 @@ map_size = size(functional_ni);
 map_size = map_size(1:3);
 mask = zeros(map_size);
 mask(:, 1:20, :) = 1;
-%%%%%%%%%%%%%%%%%%%%%%% does it need to be 1000?
-mask(func_mean<-20000) = 0;
+%%%%%%%%%%%%%%%%%%%%%%% does it need to be 2000?
+mask(func_mean<-10000) = 0;
 
 % remove global run confounds using glm
 % put the data into a volumes x voxels matrix
@@ -149,11 +172,11 @@ theta = changem(round(theta), [91:180, fliplr(1:180), 1:90], [1:360]);
 % keyboard
 % % look at maps
 % figure
-% 
+%
 % vol = theta;
 % vol = mask;
 % for slice_idx = 1:size(vol,1)
-%     
+%
 % subplot(ceil(sqrt(size(vol,1))),ceil(sqrt(size(vol,1))), slice_idx)
 % imagesc(squeeze(vol(slice_idx,:,:)))
 % axis image
@@ -162,7 +185,7 @@ theta = changem(round(theta), [91:180, fliplr(1:180), 1:90], [1:360]);
 % figure
 % imagesc(squeeze(vol(26,:,:)))
 % axis image
-% 
+%
 % vol = nan(size(vol));
 % for slice_idx = 1:size(vol,1)
 %     vol(slice_idx,:,:) = slice_idx;
@@ -186,7 +209,7 @@ end
 fprintf('writing nifti maps...\n');
 %% write to nifti
 % load map info as template
-tstat_info_ni = niftiinfo(sprintf('%s%s', input_dir, stat_map_name));
+tstat_info_ni = niftiinfo(sprintf('%s%s', output_dir, stat_map_name));
 % write polar angle map
 tstat_info_ni.Filename = [output_dir, pa_map_outname, '.nii'];
 niftiwrite(single(theta), [output_dir, pa_map_outname], tstat_info_ni);
